@@ -1,10 +1,10 @@
-# 📊 Yahoo Finance Stock Market Analysis (AAPL, MSFT, AMZN, TSLA)  
+# 📊 Samsung Electronics Stock Trading with Deep Q-Network (DQN)
 
 ## 🚀 Introduction  
 
-Stock market prediction is a crucial area in financial analysis. Prices of stocks are influenced by various factors, such as market trends, economic indicators, and investor sentiment. This project focuses on analyzing and forecasting stock prices of **Apple (AAPL), Microsoft (MSFT), Amazon (AMZN), and Tesla (TSLA)** using deep learning.  
+Stock market prediction and trading is a crucial area in financial analysis. Stock prices are influenced by various factors, such as market trends, economic indicators, and investor sentiment. This project focuses on analyzing and developing an intelligent trading system for **Samsung Electronics (005930.KS)** using Deep Q-Network (DQN) reinforcement learning.  
 
-Using **Yahoo Finance data**, we apply **Exploratory Data Analysis (EDA), Feature Engineering, Preprocessing, and Long Short-Term Memory (LSTM) Regression modeling** to predict stock prices.  
+Using **Yahoo Finance data**, we apply **Exploratory Data Analysis (EDA), Feature Engineering, Preprocessing, and Deep Q-Network (DQN) reinforcement learning** to create an autonomous trading agent.  
 
 
 
@@ -13,26 +13,27 @@ Using **Yahoo Finance data**, we apply **Exploratory Data Analysis (EDA), Featur
 
 ## 🎯 Objectives  
 
-✅ Retrieve stock market data using `yfinance` 📈  
+✅ Retrieve Samsung Electronics stock data using `yfinance` 📈  
 ✅ Perform **EDA** to visualize trends & correlations 📊  
-✅ Extracting features like **RSI, MACD,Bollinger Bands, Moving Averages vs.**  
-✅ Preprocess the data for deep learning (normalization, handling missing values)  
-✅ Implement an **LSTM and Linear Regression models** for stock price forecasting 🧠  
-✅ Evaluate predictions using **RMSE, and MAE scores**  
-✅ Compare actual vs. predicted stock prices 📉  
+✅ Extract features like **RSI, MACD, Bollinger Bands, Moving Averages**  
+✅ Preprocess the data for reinforcement learning (normalization, handling missing values)  
+✅ Implement a **Deep Q-Network (DQN) agent** for autonomous stock trading �  
+✅ Train the agent to make optimal BUY/SELL/HOLD decisions  
+✅ Evaluate trading performance using **portfolio returns and Sharpe ratio**  
+✅ Generate trading signals for future market conditions 📈 
 
 
 ---
 
 ## 🏗️ Project Workflow  
 
-🔹 **Step 1:** Data Collection (Yahoo Finance API)  
+🔹 **Step 1:** Data Collection (Samsung Electronics from Yahoo Finance API)  
 🔹 **Step 2:** Exploratory Data Analysis (EDA)  
-🔹 **Step 3:** Feature Engineering (Technical Indicators)  
-🔹 **Step 4:** Data Preprocessing (Normalization, Reshaping)  
-🔹 **Step 5:** LSTM & Linear Regression Models Training & Prediction  
-🔹 **Step 6:** Model Evaluation (Error Metrics)  
-🔹 **Step 7:** Results & Visualization  
+🔹 **Step 3:** Feature Engineering (Technical Indicators: RSI, MACD, SMA)  
+🔹 **Step 4:** Data Preprocessing (Normalization, Environment Setup)  
+🔹 **Step 5:** DQN Agent Training (Reinforcement Learning)  
+🔹 **Step 6:** Trading Performance Evaluation (Portfolio Returns)  
+🔹 **Step 7:** Future Trading Signal Generation & Visualization  
 
 ---
 
@@ -82,14 +83,14 @@ numpy
 matplotlib  
 seaborn  
 scikit-learn  
-tensorflow  
-keras
+torch
+torchvision
 plotly  
 ```
 
 You can install them using:  
 ```bash
-pip install yfinance quantstats ta PyPortfolioOpt pandas numpy matplotlib seaborn scikit-learn tensorflow keras plotly
+pip install yfinance quantstats ta PyPortfolioOpt pandas numpy matplotlib seaborn scikit-learn torch torchvision plotly
 ```
 
 ---
@@ -111,37 +112,46 @@ pip install yfinance quantstats ta PyPortfolioOpt pandas numpy matplotlib seabor
 
 
 
-## 🏗️ LSTM Model Architecture
+## 🏗️ DQN Model Architecture
 
-The **BiLSTM (Bidirectional Long Short-Term Memory)** model used for stock price prediction follows the architecture below:
+The **Deep Q-Network (DQN)** model used for stock trading follows the reinforcement learning architecture below:
 
 ### **Model Overview**
-- **Input Shape:** `(n_timesteps, 18)`  
-  The input consists of sequences with `n_timesteps` (time steps) and 18 features for each time step.
-  
-- **LSTM Layers:**  
-  - **3 stacked Bidirectional LSTM layers** with 64 units each.  
-  The bidirectional nature allows the model to learn from both past and future data points.
+- **State Space:** 6-dimensional vector including:
+  - Normalized portfolio balance
+  - Normalized position value  
+  - Normalized net worth
+  - RSI indicator (0-1)
+  - MACD signal
+  - Price vs SMA ratio
 
-- **Fully Connected Layer (Dense Layer):**  
-  A Dense layer with 32 units and **ReLU activation** to learn complex patterns from the LSTM outputs.
-  
-- **Output Layer:**  
-  A final **Dense layer** with 1 unit to predict the **'Close' price** of the stock.
+- **Action Space:** 3 discrete actions
+  - **0:** HOLD (maintain current position)
+  - **1:** BUY (purchase stocks)
+  - **2:** SELL (sell all holdings)
 
-### **Model Parameters**
-- **Activation Function:**  
-  - Hidden layers: **ReLU** activation  
-  - Output layer: **Linear activation**
-  
-- **Optimizer:**  
-  **Adam optimizer** for efficient training and learning.
-  
-- **Loss Function:**  
-  **Huber loss** for robust training, balancing between Mean Squared Error (MSE) and Mean Absolute Error (MAE).
+- **Neural Network Architecture:**
+  - **Input Layer:** 6 neurons (state features)
+  - **Hidden Layers:** 3 fully connected layers with 128 neurons each
+  - **Output Layer:** 3 neurons (Q-values for each action)
+  - **Activation:** ReLU for hidden layers
+  - **Dropout:** 0.2 for regularization
 
+### **Training Parameters**
+- **Optimizer:** Adam optimizer with learning rate 0.001
+- **Loss Function:** Mean Squared Error (MSE)
+- **Experience Replay:** Buffer size of 10,000 transitions
+- **Epsilon-Greedy:** Starting at 1.0, decaying to 0.01
+- **Target Network:** Updated every 10 episodes
+- **Discount Factor:** 0.99
 
-This architecture is designed to effectively capture complex patterns in time-series data, particularly for stock price forecasting.
+### **Reward Function**
+The agent receives rewards based on:
+- Portfolio net worth changes
+- Transaction costs (0.1% per trade)
+- Penalty for excessive holding without trading
+
+This architecture enables the agent to learn optimal trading strategies through trial and error, maximizing long-term portfolio returns.
 
 
 
@@ -149,17 +159,23 @@ This architecture is designed to effectively capture complex patterns in time-se
 
 ## 📈 Results & Evaluation  
 
-The model is evaluated using the following metrics:  
+The DQN trading agent is evaluated using the following metrics:  
 
-📌 **Root Mean Square Error (RMSE)**  
-📌 **Mean Absolute Error (MAE)**  
+📌 **Portfolio Return (%)** - Total return on investment  
+📌 **Sharpe Ratio** - Risk-adjusted return measure  
+📌 **Maximum Drawdown** - Largest portfolio decline  
+� **Numbelr of Trades** - Trading frequency  
+📌 **Win Rate** - Percentage of profitable trades  
 
-🔍 **Example Prediction Plot:**  
+🔍 **Example Trading Performance:**  
 
-<p align="center"><img width="600" alt="Screenshot 2025-01-30 at 22 13 28" src="https://github.com/gamzeakkurt/deep-learning-stock-prediction/blob/main/EDA-images/output_113_0.png" />
+The DQN agent learns to:
+- Identify optimal entry and exit points
+- Manage risk through position sizing
+- Adapt to changing market conditions
+- Maximize long-term portfolio growth
 
-
-</p>
+Training progress shows convergence of the Q-network and improvement in trading performance over episodes.
 
 
 ## 📄 Additional Information
@@ -169,17 +185,17 @@ All details regarding the code, including visualization, results, and interpreta
 
 ## 📌 Future Improvements  
 
-🔹 **Hyperparameter Optimization:** We will fine-tune model parameters to enhance predictive
-accuracy and reduce errors.
+🔹 **Advanced DQN Variants:** Implement Double DQN, Dueling DQN, and Rainbow DQN for improved performance and stability.
 
-🔹 **Model Comparison:** In addition to LSTM, we will evaluate and compare performance with
-ARIMA, XGBoost, and CNN models to identify the most effective approach.
+🔹 **Multi-Asset Trading:** Extend the framework to trade multiple Korean stocks simultaneously with portfolio optimization.
 
-🔹 **Feature Expansion:** We plan to incorporate additional financial indicators and external
-factors (e.g., market sentiment, economic trends) to improve model robustness.
+🔹 **Alternative RL Algorithms:** Compare DQN with Actor-Critic methods (A3C, PPO) and other reinforcement learning approaches.
 
-🔹 **Hybrid Model Approach:** Combining LSTM with ARIMA, XGBoost, and CNN to
-leverage both deep learning and traditional statistical methods for improved performance.
+🔹 **Feature Enhancement:** Incorporate additional technical indicators, market sentiment data, and macroeconomic factors.
+
+🔹 **Risk Management:** Implement advanced risk management strategies including stop-loss, position sizing, and volatility-based adjustments.
+
+🔹 **Real-time Trading:** Deploy the trained agent for live trading with proper backtesting and paper trading validation.
 
 
 ---
@@ -191,7 +207,7 @@ This project is licensed under the **MIT License**.
 ---
 
 ## 🔍 Keywords
-#yahoofinance #finance #economics #deeplearning #stockprediction #machinelearning #eda 
+#samsungelectronics #dqn #reinforcementlearning #stocktrading #deeplearning #finance #korea #yahoofinance #pytorch #eda 
 
 
 

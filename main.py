@@ -1,79 +1,66 @@
-#Import libraries
-
+# Import libraries
 from data_acquisition import *
 from FeatureEngineering import *
 from Preprocessing import *
-from  linear_regression import *
+from linear_regression import *
 from eda import perform_eda
-from lstm_model import *
-from result_visualization_lstm import *
+from dqn_model import *
 
+# Define ticker for Samsung Electronics
+tickers = ['005930.KS']  # Samsung Electronics Co., Ltd.
+companies = ['Samsung Electronics']
 
-# Define tickers
-tickers = ['AAPL', 'AMZN', 'TSLA', 'MSFT']
-companies = ['Apple', 'Amazon', 'Tesla', 'Microsoft']
-
-#Load data
+# Load data
 df = load_stock_data(tickers)
 
-#Perform Exploratory Data Analysis (EDA)
+# Perform Exploratory Data Analysis (EDA)
 perform_eda(df, tickers, companies)
 
-# Feature Engineering for Apple Stock
-df_apple = download_and_process_data('AAPL')
-
+# Feature Engineering for Samsung Electronics Stock
+df_samsung = download_and_process_data('005930.KS')
 
 # Preprocessing(Normalizing)
-scaler, normalized_data = min_max_scaling(df_apple)
-df_normalized = pd.DataFrame(normalized_data, columns=df_apple.columns)
-df_normalized["Date"] = df_apple.index
-df_normalized=df_normalized.set_index('Date')
+scaler, normalized_data = min_max_scaling(df_samsung)
+df_normalized = pd.DataFrame(normalized_data, columns=df_samsung.columns)
+df_normalized["Date"] = df_samsung.index
+df_normalized = df_normalized.set_index('Date')
 
-#Linear Regression Model
-regressor, scaler, mae, mse, rmse, r2, compare_df = linear_prediction(df_normalized)
+# PyTorch Linear Regression Model
+linear_model, scaler, mae, mse, rmse, r2, compare_df = linear_prediction(df_normalized)
 
+# Future Forecasting with PyTorch Linear Regression
+linear_model, future_predictions = linear_forecasting(df_samsung, linear_model, scaler, future_days=30)
 
-#Future Forecasting with Linear Regression
-regressor, future_predictions = linear_forecasting(df_apple,scaler, future_days=30)
+# Saving Future Prediction Results
+future_predictions.to_csv('Results/future_predictions-samsung-pytorch-linear-regression.csv')
 
-#Saving Future Prediction Results
-future_predictions.to_csv('Results/future_predictions-linear-regression.csv')
+# Filling Nan Values
+df_normalized = df_normalized.fillna(0)
 
-#Filling Nan Values
-df_normalized=df_normalized.fillna(0)
+print("\n" + "="*60)
+print("TRAINING DQN MODEL FOR SAMSUNG ELECTRONICS STOCK TRADING")
+print("="*60)
 
-#Reshaping dataset before LSTM 
-X_train, y_train, X_test, y_test=split_and_reshape_data(df_normalized, 30, 'Apple')
+# Train DQN Model
+dqn_agent, dqn_env, episode_rewards, episode_net_worths = train_dqn_model(df_samsung, episodes=500, company='Samsung Electronics')
 
-#Run LSTM Model
-model, predictor, y_pred = train_lstm_model(X_train, y_train, X_test, y_test, 'Apple')
+# Test DQN Model
+test_results = test_dqn_model(dqn_agent, df_samsung, company='Samsung Electronics')
 
-#Visualize Model Loss
-model_loss(predictor)
+# Plot DQN Training Progress
+plot_dqn_training_progress(episode_rewards, episode_net_worths)
 
-#Denormalized Predictions 
-y_pred_denormalized=denormalize_predictions(y_pred,df_apple)
-y_test_denormalized=denormalize_predictions(y_test,df_apple)
+# Plot DQN Portfolio Performance
+plot_dqn_portfolio_performance(test_results)
 
-#Visualize Model Prediction
-plot_stock_predictions(y_pred_denormalized, y_test_denormalized,df_apple)
+# DQN Forecasting
+dqn_forecast = forecast_dqn(dqn_agent, df_samsung, future_days=30)
+dqn_forecast.to_csv('Results/future_predictions_samsung_dqn.csv')
 
-#Performance Metrics
-prediction_metrics(y_pred_denormalized,y_test_denormalized)
+# Plot DQN Forecast Results
+plot_dqn_forecast_results(df_samsung, dqn_forecast)
 
-# Reset Index 
-df_apple=df_apple.reset_index()
-
-
-#Forecasting Next 30 Days
-forecast_result=forecast_lstm(model,df_apple,df_normalized, future_days=30, n_steps=50)
-forecast_result.to_csv('Results/future_predictions_lstm.csv')
-if isinstance(forecast_result, tuple):  
-    forecast_df = forecast_result[0]  # Extract the first element if it's a tuple
-else:
-    forecast_df = forecast_result  # If it's already a DataFrame, use it directly
-
-
-#Ploting Forecasting Result
-plot_forecast_results(df_apple, forecast_df)
+print("\n" + "="*60)
+print("SAMSUNG ELECTRONICS DQN MODEL TRAINING AND TESTING COMPLETED")
+print("="*60)
 

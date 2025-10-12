@@ -54,8 +54,7 @@ pio.renderers.default = "colab"
 warnings.filterwarnings("ignore")
 
 """
-We will use Yahoo Finance to analyze the stock market performance of four major technology companies: 
-Apple (AAPL), Amazon (AMZN), Tesla (TSLA), and Microsoft (MSFT). 
+We will use Yahoo Finance to analyze the stock market performance of Samsung Electronics (005930.KS). 
 Our dataset contains daily returns from January 1, 2020, to January 1, 2025.
 """
 
@@ -81,7 +80,7 @@ def load_stock_data(tickers, start_date='2020-01-01', end_date='2025-01-01'):
     return df
 
 if __name__ == "__main__":
-    tickers = ['AAPL', 'AMZN', 'TSLA', 'MSFT']
+    tickers = ['005930.KS']  # Samsung Electronics
     df = load_stock_data(tickers)
     print(df.tail(10))  # Only runs if executed directly
 

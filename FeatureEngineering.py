@@ -58,24 +58,32 @@ def extracting_features(df):
     return df
 
 
-def download_and_process_data(ticker='AAPL'):
+def download_and_process_data(ticker='005930.KS'):
     """Downloads and processes the stock data for the given ticker."""
-    print(f'Extracting New Features for {ticker}')
+    print(f'Extracting New Features for {ticker} (Samsung Electronics)')
     print('--------------------------------------')
     
     # Download the data for the given stock ticker
     df = yf.download(ticker, start='2020-01-01', end=datetime.now(), auto_adjust=False)
     
-    # Reshape the DataFrame so that tickers appear in rows (in case of multi-level columns)
-    df.columns = df.columns.droplevel(1)
+    # Check if multi-level columns exist and handle accordingly
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.droplevel(1)
 
     # Filter only the relevant columns (Price, Adj Close, Close, High, Low, Open, Volume)
     df = df[['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']]
     
+    # Add Date column for DQN environment
+    df['Date'] = df.index
+    
     # Apply the feature extraction function
     df = extracting_features(df)
+    
+    # Add additional features needed for DQN
+    df['SMA_20'] = df['Close'].rolling(window=20).mean()
+    
     print(df.tail(5))
-    print(f'New features have been successfully added to the DataFrame for {ticker}.')
+    print(f'New features have been successfully added to the DataFrame for {ticker} (Samsung Electronics).')
     print('-----------------------------------------------------------')
     
     return df
